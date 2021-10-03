@@ -1,3 +1,5 @@
+var start = clock();
+
 fun fib(n) {
     if (n <= 1) return n;
     return fib(n - 2) + fib(n - 1);
@@ -21,3 +23,16 @@ fun makeCounter() {
 var counter = makeCounter();
 counter(); // "1".
 counter(); // "2".
+
+var a = "global";
+{
+    fun showA() {
+        print a;
+    }
+
+    showA();
+    var a = "block";
+    showA();
+}
+
+print clock() - start;
