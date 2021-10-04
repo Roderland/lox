@@ -10,9 +10,11 @@ import java.util.Map;
 class LoxClass implements LoxCallable {
     final String name;
     private final Map<String, LoxFunction> methods;
+    private LoxClass superclass;
 
-    LoxClass(String name, Map<String, LoxFunction> methods) {
+    LoxClass(String name, LoxClass superclass, Map<String, LoxFunction> methods) {
         this.name = name;
+        this.superclass = superclass;
         this.methods = methods;
     }
 
@@ -39,6 +41,11 @@ class LoxClass implements LoxCallable {
     }
 
     LoxFunction findMethod(String name) {
-        return methods.get(name);
+        LoxFunction method = methods.get(name);
+        if (method != null) return method;
+        if (superclass != null) {
+            method = superclass.findMethod(name);
+        }
+        return method;
     }
 }

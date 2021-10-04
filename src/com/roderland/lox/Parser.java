@@ -17,7 +17,8 @@ import static com.roderland.lox.TokenType.*;
  *                       | classDecl
  *                       | statement ;
  *
- *        classDecl      → "class" IDENTIFIER "{" function* "}" ;
+ *        classDecl      → "class" IDENTIFIER ( "<" IDENTIFIER)"
+ *                         {" function* "}" ;
  *
  *        varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
  *
@@ -58,9 +59,9 @@ import static com.roderland.lox.TokenType.*;
  *                       | primary ;
  *        call           → primary ( "(" arguments? ")" | "." IDENTIFIER )* ;
  *        arguments      → expression ( "," expression )* ;
- *        primary        → NUMBER | STRING | "true" | "false" | "nil"
- *                       | "(" expression ")" ;
- *                       | ( "this" "." )? IDENTIFIER ;
+ *        primary        → "true" | "false" | "nil" | "this"
+ *                       | NUMBER | STRING | IDENTIFIER | "(" expression ")"
+ *                       | "super" "." IDENTIFIER ;
  *
  */
 class Parser {
@@ -122,6 +123,13 @@ class Parser {
 
     private Stmt classDeclaration() {
         Token name = consume(IDENTIFIER, "Expect class name.");
+
+        Expr.Variable superclass = null;
+        if (match(LESS)) {
+            consume(IDENTIFIER, "Expect superclass name.");
+            superclass = new Expr.Variable(previous());
+        }
+
         consume(LEFT_BRACE, "Expect '{' before class body.");
 
         List<Stmt.Function> methods = new ArrayList<>();
@@ -130,7 +138,7 @@ class Parser {
         }
 
         consume(RIGHT_BRACE, "Expect '}' after class body.");
-        return new Stmt.Class(name, methods);
+        return new Stmt.Class(name, superclass, methods);
     }
 
     private Stmt returnStatement() {
@@ -424,6 +432,13 @@ class Parser {
         }
 
         if (match(THIS)) return new Expr.This(previous());
+
+        if (match(SUPER)) {
+            Token name = previous();
+            consume(DOT, "Expect '.' after 'super'.");
+            Token method = consume(IDENTIFIER, "Expect superclass method name.");
+            return new Expr.Super(name, method);
+        }
 
         throw error(peek(), "Expect expression.");
     }
