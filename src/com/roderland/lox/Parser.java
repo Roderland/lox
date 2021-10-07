@@ -23,7 +23,7 @@ import static com.roderland.lox.TokenType.*;
  *        varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
  *
  *        funDecl        → "fun" function ;
- *        function       → IDENTIFIER "(" parameters ")" block ;
+ *        function       → IDENTIFIER "(" parameters? ")" block ;
  *        parameters     → IDENTIFIER ( "," IDENTIFIER )* ;
  *
  *        statement      → exprStmt
@@ -81,8 +81,6 @@ class Parser {
         return statements;
     }
 
-    // declaration    → varDecl
-    //                | statement ;
     private Stmt declaration() {
         try {
             if (match(VAR)) return varDeclaration();
@@ -93,7 +91,6 @@ class Parser {
         }
     }
 
-    // varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
     private Stmt varDeclaration() {
         Token name = consume(IDENTIFIER, "Expect variable name.");
 
@@ -106,9 +103,6 @@ class Parser {
         return new Stmt.Var(name, initializer);
     }
 
-    // statement      → exprStmt
-    //                | printStmt ;
-    //                | block ;
     private Stmt statement() {
         if (match(PRINT)) return printStatement();
         if (match(LEFT_BRACE)) return new Stmt.Block(block());
@@ -234,7 +228,6 @@ class Parser {
         return new Stmt.If(condition, thenStatement, elseStatement);
     }
 
-    // block          → "{" declaration* "}" ;
     private List<Stmt> block() {
         List<Stmt> statements = new ArrayList<>();
 
@@ -246,27 +239,22 @@ class Parser {
         return statements;
     }
 
-    // printStmt      → "print" expression ";" ;
     private Stmt printStatement() {
         Expr value = expression();
         consume(SEMICOLON, "Expect ';' after value.");
         return new Stmt.Print(value);
     }
 
-    // exprStmt       → expression ";" ;
     private Stmt expressionStatement() {
         Expr expr = expression();
         consume(SEMICOLON, "Expect ';' after expression.");
         return new Stmt.Expression(expr);
     }
 
-    // expression     → assigment ;
     private Expr expression() {
         return assignment();
     }
 
-    // assigment      → IDENTIFIER "=" assigment
-    //                | equality ;
     private Expr assignment() {
         Expr expr = or();
 
@@ -312,7 +300,6 @@ class Parser {
         return expr;
     }
 
-    // equality       → comparison ( ( "!=" | "==" ) comparison )* ;
     private Expr equality() {
         Expr expr = comparison();
 
@@ -325,7 +312,6 @@ class Parser {
         return expr;
     }
 
-    // comparison     → term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
     private Expr comparison() {
         Expr expr = term();
 
@@ -338,7 +324,6 @@ class Parser {
         return expr;
     }
 
-    // term           → factor ( ( "-" | "+" ) factor )* ;
     private Expr term() {
         Expr expr = factor();
 
@@ -351,7 +336,6 @@ class Parser {
         return expr;
     }
 
-    // factor         → unary ( ( "/" | "*" ) unary )* ;
     private Expr factor() {
         Expr expr = unary();
 
@@ -364,8 +348,6 @@ class Parser {
         return expr;
     }
 
-    // unary          → ( "!" | "-" ) unary
-    //                | primary ;
     private Expr unary() {
         if (match(BANG, MINUS)) {
             Token operator = previous();
@@ -410,8 +392,6 @@ class Parser {
         return new Expr.Call(callee, paren, arguments);
     }
 
-    // primary        → NUMBER | STRING | "true" | "false" | "nil"
-    //                | "(" expression ")" ;
     private Expr primary() {
         if (match(TRUE)) return new Expr.Literal(true);
         if (match(FALSE)) return new Expr.Literal(false);
