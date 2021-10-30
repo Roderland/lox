@@ -1,2 +1,2 @@
 # lox
-My implementation of Lox from the book https://www.craftinginterpreters.com/
+My implementation of Lox from the book ==> https://www.craftinginterpreters.com/com/
